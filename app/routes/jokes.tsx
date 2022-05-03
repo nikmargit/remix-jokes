@@ -1,4 +1,3 @@
-import { Joke } from '@prisma/client'
 import { json, LinksFunction, LoaderFunction } from '@remix-run/node'
 import { Outlet, Link, useLoaderData } from '@remix-run/react'
 
@@ -6,7 +5,7 @@ import stylesUrl from '~/styles/jokes.css'
 import { db } from '~/utils/db.server'
 
 type LoaderData = {
-  jokeListItems: Joke[]
+  jokeListItems: Array<{ name: string; id: string }>
 }
 
 export const links: LinksFunction = () => {
@@ -15,7 +14,11 @@ export const links: LinksFunction = () => {
 
 export const loader: LoaderFunction = async () => {
   const data: LoaderData = {
-    jokeListItems: await db.joke.findMany(),
+    jokeListItems: await db.joke.findMany({
+      take: 5,
+      select: { id: true, name: true },
+      orderBy: { createdAt: 'desc' },
+    }),
   }
   return json(data)
 }
